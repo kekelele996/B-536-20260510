@@ -20,4 +20,5 @@ public class ReservationVO {
     private Integer seatNumber;
     private String status;
     private LocalDateTime createdAt;
+    private Integer waitlistPosition;
 }
