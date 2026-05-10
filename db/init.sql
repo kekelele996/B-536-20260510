@@ -49,6 +49,31 @@ CREATE TABLE IF NOT EXISTS reservation (
     FOREIGN KEY (time_slot_id) REFERENCES time_slot(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 创建候补排队表
+CREATE TABLE IF NOT EXISTS waitlist (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    time_slot_id BIGINT NOT NULL,
+    status VARCHAR(20) DEFAULT 'WAITING',
+    position INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (time_slot_id) REFERENCES time_slot(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 创建通知表
+CREATE TABLE IF NOT EXISTS notification (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    type VARCHAR(20) DEFAULT 'WAITLIST_PROMOTED',
+    is_read BOOLEAN DEFAULT FALSE,
+    related_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 插入测试管理员账号 (密码: admin123)
 -- 注意：这个密码哈希是由 Spring Security BCryptPasswordEncoder 生成的
 -- 如果登录失败，请使用注册功能创建新账号，或运行 fix-admin-simple.sh
