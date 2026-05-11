@@ -132,4 +132,45 @@ export const reservationApi = {
   }
 }
 
+// 候补排队相关API
+export const waitlistApi = {
+  join(data) {
+    return request.post('/waitlist', data)
+  },
+  cancel(id, userId) {
+    return request.delete(`/waitlist/${id}`, { params: { userId } })
+  },
+  getUserWaitlist(userId) {
+    return request.get(`/waitlist/user/${userId}`)
+  },
+  getTimeSlotWaitlist(timeSlotId) {
+    return request.get(`/waitlist/time-slot/${timeSlotId}`)
+  },
+  checkUserInWaitlist(userId, timeSlotId) {
+    return request.get('/waitlist/check', { params: { userId, timeSlotId } })
+  },
+  getWaitlistCount(timeSlotId) {
+    return request.get(`/waitlist/count/${timeSlotId}`)
+  }
+}
+
+// 通知相关API
+export const notificationApi = {
+  getUserNotifications(userId) {
+    return request.get(`/notifications/user/${userId}`)
+  },
+  getUserUnreadNotifications(userId) {
+    return request.get(`/notifications/user/${userId}/unread`)
+  },
+  getUnreadCount(userId) {
+    return request.get(`/notifications/user/${userId}/unread-count`)
+  },
+  markAsRead(id, userId) {
+    return request.put(`/notifications/${id}/read`, null, { params: { userId } })
+  },
+  markAllAsRead(userId) {
+    return request.put('/notifications/read-all', null, { params: { userId } })
+  }
+}
+
 export default request

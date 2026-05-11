@@ -26,6 +26,7 @@ public class ReservationService {
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
     private final StudyRoomRepository studyRoomRepository;
+    private final WaitlistService waitlistService;
 
     @Transactional
     public Reservation createReservation(ReservationRequest request) {
@@ -86,13 +87,14 @@ public class ReservationService {
         reservation.setStatus("CANCELLED");
         reservationRepository.save(reservation);
 
-        // 取消预约时，增加时间段的可用座位数
         TimeSlot timeSlot = timeSlotRepository.findById(reservation.getTimeSlotId())
                 .orElse(null);
         if (timeSlot != null) {
             timeSlot.setAvailableSeats(timeSlot.getAvailableSeats() + 1);
             timeSlotRepository.save(timeSlot);
         }
+
+        waitlistService.processWaitlistWhenCancelled(reservation.getTimeSlotId());
     }
 
     private ReservationVO convertToVO(Reservation reservation) {

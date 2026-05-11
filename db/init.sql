@@ -49,6 +49,35 @@ CREATE TABLE IF NOT EXISTS reservation (
     FOREIGN KEY (time_slot_id) REFERENCES time_slot(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 创建候补队列表
+CREATE TABLE IF NOT EXISTS waitlist (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    time_slot_id BIGINT NOT NULL,
+    queue_position INT,
+    status VARCHAR(20) DEFAULT 'WAITING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (time_slot_id) REFERENCES time_slot(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_waiting_user (user_id, time_slot_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 创建通知表
+CREATE TABLE IF NOT EXISTS notification (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    content VARCHAR(500) NOT NULL,
+    type VARCHAR(50) DEFAULT 'SYSTEM',
+    related_id BIGINT,
+    status VARCHAR(20) DEFAULT 'UNREAD',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_user_status (user_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 插入测试管理员账号 (密码: admin123)
 -- 注意：这个密码哈希是由 Spring Security BCryptPasswordEncoder 生成的
 -- 如果登录失败，请使用注册功能创建新账号，或运行 fix-admin-simple.sh
