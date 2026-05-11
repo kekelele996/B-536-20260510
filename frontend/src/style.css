@@ -239,3 +239,47 @@ table th {
   margin-bottom: 10px;
   color: #2d3748;
 }
+
+.badge-info {
+  background: #bee3f8;
+  color: #2a4365;
+}
+
+.btn-warning {
+  background: #d69e2e;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #b7791f;
+}
+
+.notification-item {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #f7fafc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+}
+
+.notification-item:hover {
+  background: #edf2f7;
+}
+
+.notification-unread {
+  color: #4299e1;
+  margin-right: 8px;
+}
+
+.notification-read {
+  color: #cbd5e0;
+  margin-right: 8px;
+}
+
+.notification-time {
+  color: #a0aec0;
+  font-size: 12px;
+  margin-left: 12px;
+}

@@ -132,4 +132,39 @@ export const reservationApi = {
   }
 }
 
+// 候补排队相关API
+export const waitlistApi = {
+  join(data) {
+    return request.post('/waitlist', data)
+  },
+  leave(id, userId) {
+    return request.delete(`/waitlist/${id}`, { params: { userId } })
+  },
+  getUserWaitlist(userId) {
+    return request.get(`/waitlist/user/${userId}`)
+  },
+  getCount(timeSlotId) {
+    return request.get('/waitlist/count', { params: { timeSlotId } })
+  },
+  check(userId, timeSlotId) {
+    return request.get('/waitlist/check', { params: { userId, timeSlotId } })
+  }
+}
+
+// 通知相关API
+export const notificationApi = {
+  getUserNotifications(userId) {
+    return request.get(`/notifications/user/${userId}`)
+  },
+  getUnreadCount(userId) {
+    return request.get('/notifications/unread-count', { params: { userId } })
+  },
+  markRead(id, userId) {
+    return request.put(`/notifications/${id}/read`, null, { params: { userId } })
+  },
+  markAllRead(userId) {
+    return request.put('/notifications/read-all', null, { params: { userId } })
+  }
+}
+
 export default request

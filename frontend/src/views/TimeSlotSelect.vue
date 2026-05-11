@@ -34,6 +34,7 @@
               <th>开始时间</th>
               <th>结束时间</th>
               <th>剩余座位</th>
+              <th>候补人数</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -48,17 +49,40 @@
                 </span>
               </td>
               <td>
-                <button 
-                  @click="makeReservation(slot.id)" 
-                  class="btn"
-                  :class="{
-                    'btn-success': slot.availableSeats > 0 && !isAlreadyReserved(slot.id),
-                    'btn-danger': slot.availableSeats === 0 || isAlreadyReserved(slot.id)
-                  }"
-                  :disabled="slot.availableSeats === 0 || isAlreadyReserved(slot.id)"
-                >
-                  {{ getButtonText(slot) }}
-                </button>
+                <span class="badge badge-info">
+                  {{ waitlistCounts[slot.id] || 0 }} 人
+                </span>
+              </td>
+              <td>
+                <template v-if="isAlreadyReserved(slot.id)">
+                  <button class="btn" disabled style="background: #a0aec0; color: white;">
+                    已预约
+                  </button>
+                </template>
+                <template v-else-if="slot.availableSeats > 0">
+                  <button 
+                    @click="makeReservation(slot.id)" 
+                    class="btn btn-success"
+                  >
+                    立即预约
+                  </button>
+                </template>
+                <template v-else-if="isUserInWaitlist(slot.id)">
+                  <button 
+                    @click="leaveWaitlist(slot.id)" 
+                    class="btn btn-danger"
+                  >
+                    退出候补
+                  </button>
+                </template>
+                <template v-else>
+                  <button 
+                    @click="joinWaitlist(slot.id)" 
+                    class="btn btn-warning"
+                  >
+                    加入候补
+                  </button>
+                </template>
               </td>
             </tr>
           </tbody>
@@ -71,14 +95,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { timeSlotApi, reservationApi } from '../api'
+import { timeSlotApi, reservationApi, waitlistApi } from '../api'
 import { useToast } from '../composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
-const { success, error } = useToast()
+const { success, error, warning } = useToast()
 const timeSlots = ref([])
 const myReservations = ref([])
+const myWaitlist = ref([])
+const waitlistCounts = ref({})
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'))
 
 const loadTimeSlots = async () => {
@@ -86,6 +112,7 @@ const loadTimeSlots = async () => {
     const roomId = route.params.roomId
     const res = await timeSlotApi.getByStudyRoom(roomId)
     timeSlots.value = res.data
+    loadWaitlistCounts()
   } catch (err) {
     error(err.message || '加载时间段失败')
   }
@@ -96,8 +123,27 @@ const loadMyReservations = async () => {
     const res = await reservationApi.getUserReservations(user.value.id)
     myReservations.value = res.data.filter(r => r.status === 'ACTIVE')
   } catch (err) {
-    // 静默失败，不影响主流程
     console.error('加载预约记录失败', err)
+  }
+}
+
+const loadMyWaitlist = async () => {
+  try {
+    const res = await waitlistApi.getUserWaitlist(user.value.id)
+    myWaitlist.value = res.data.filter(w => w.status === 'WAITING')
+  } catch (err) {
+    console.error('加载候补记录失败', err)
+  }
+}
+
+const loadWaitlistCounts = async () => {
+  for (const slot of timeSlots.value) {
+    try {
+      const res = await waitlistApi.getCount(slot.id)
+      waitlistCounts.value[slot.id] = res.data
+    } catch (err) {
+      waitlistCounts.value[slot.id] = 0
+    }
   }
 }
 
@@ -105,14 +151,8 @@ const isAlreadyReserved = (timeSlotId) => {
   return myReservations.value.some(r => r.timeSlotId === timeSlotId)
 }
 
-const getButtonText = (slot) => {
-  if (isAlreadyReserved(slot.id)) {
-    return '已预约'
-  }
-  if (slot.availableSeats === 0) {
-    return '已满'
-  }
-  return '立即预约'
+const isUserInWaitlist = (timeSlotId) => {
+  return myWaitlist.value.some(w => w.timeSlotId === timeSlotId)
 }
 
 const makeReservation = async (timeSlotId) => {
@@ -122,10 +162,34 @@ const makeReservation = async (timeSlotId) => {
       timeSlotId
     })
     success('预约成功')
-    // 重新加载时间段和预约记录
-    await Promise.all([loadTimeSlots(), loadMyReservations()])
+    await Promise.all([loadTimeSlots(), loadMyReservations(), loadMyWaitlist()])
   } catch (err) {
     error(err.message || '预约失败')
+  }
+}
+
+const joinWaitlist = async (timeSlotId) => {
+  try {
+    await waitlistApi.join({
+      userId: user.value.id,
+      timeSlotId
+    })
+    warning('已加入候补队列，有空位将通知您')
+    await Promise.all([loadMyWaitlist(), loadWaitlistCounts()])
+  } catch (err) {
+    error(err.message || '加入候补失败')
+  }
+}
+
+const leaveWaitlist = async (timeSlotId) => {
+  const entry = myWaitlist.value.find(w => w.timeSlotId === timeSlotId)
+  if (!entry) return
+  try {
+    await waitlistApi.leave(entry.id, user.value.id)
+    success('已退出候补')
+    await Promise.all([loadMyWaitlist(), loadWaitlistCounts()])
+  } catch (err) {
+    error(err.message || '退出候补失败')
   }
 }
 
@@ -143,5 +207,6 @@ const handleLogout = () => {
 onMounted(() => {
   loadTimeSlots()
   loadMyReservations()
+  loadMyWaitlist()
 })
 </script>
