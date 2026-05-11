@@ -121,14 +121,42 @@ export const reservationApi = {
   create(data) {
     return request.post('/reservations', data)
   },
+  joinWaitlist(data) {
+    return request.post('/reservations/waitlist', data)
+  },
   getUserReservations(userId) {
     return request.get(`/reservations/user/${userId}`)
   },
   getAllReservations() {
     return request.get('/reservations/all')
   },
+  getWaitlistCount(timeSlotId) {
+    return request.get(`/reservations/waitlist/count/${timeSlotId}`)
+  },
   cancel(id, userId) {
     return request.delete(`/reservations/${id}`, { params: { userId } })
+  },
+  cancelWaitlist(id, userId) {
+    return request.delete(`/reservations/waitlist/${id}`, { params: { userId } })
+  }
+}
+
+// 通知相关API
+export const notificationApi = {
+  getUserNotifications(userId) {
+    return request.get(`/notifications/user/${userId}`)
+  },
+  getUnreadNotifications(userId) {
+    return request.get(`/notifications/user/${userId}/unread`)
+  },
+  getUnreadCount(userId) {
+    return request.get(`/notifications/user/${userId}/unread-count`)
+  },
+  markAsRead(id, userId) {
+    return request.put(`/notifications/${id}/read`, null, { params: { userId } })
+  },
+  markAllAsRead(userId) {
+    return request.put(`/notifications/user/${userId}/mark-all-read`)
   }
 }
 
