@@ -26,6 +26,7 @@ public class ReservationService {
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
     private final StudyRoomRepository studyRoomRepository;
+    private final WaitlistService waitlistService;
 
     @Transactional
     public Reservation createReservation(ReservationRequest request) {
@@ -42,7 +43,7 @@ public class ReservationService {
         // 检查时间段是否已满
         long reservedCount = reservationRepository.countActiveReservationsByTimeSlotId(request.getTimeSlotId());
         if (reservedCount >= timeSlot.getAvailableSeats()) {
-            throw new BusinessException("该时间段已满，无法预约");
+            throw new BusinessException("该时间段已满，无法预约，可加入候补排队");
         }
 
         Reservation reservation = new Reservation();
@@ -86,12 +87,13 @@ public class ReservationService {
         reservation.setStatus("CANCELLED");
         reservationRepository.save(reservation);
 
-        // 取消预约时，增加时间段的可用座位数
         TimeSlot timeSlot = timeSlotRepository.findById(reservation.getTimeSlotId())
                 .orElse(null);
         if (timeSlot != null) {
             timeSlot.setAvailableSeats(timeSlot.getAvailableSeats() + 1);
             timeSlotRepository.save(timeSlot);
+
+            waitlistService.promoteNext(timeSlot.getId());
         }
     }
 
