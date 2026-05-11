@@ -1,0 +1,24 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Backend
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.DS_Store
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
