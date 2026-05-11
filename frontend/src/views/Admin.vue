@@ -7,6 +7,7 @@
           <router-link to="/study-rooms">自习室列表</router-link>
           <router-link to="/my-reservations">我的预约</router-link>
           <router-link to="/admin" class="active">管理后台</router-link>
+          <NotificationBell :userId="user.id" />
           <a href="#" @click.prevent="handleLogout">退出登录</a>
         </div>
       </div>
@@ -146,6 +147,7 @@ import { useRouter } from 'vue-router'
 import { studyRoomApi, timeSlotApi, reservationApi } from '../api'
 import { useToast } from '../composables/useToast'
 import { useConfirm } from '../composables/useConfirm'
+import NotificationBell from '../components/NotificationBell.vue'
 
 const router = useRouter()
 const { success, error } = useToast()

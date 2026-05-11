@@ -64,6 +64,34 @@ body {
   background: #38a169;
 }
 
+.btn-warning {
+  background: #ed8936;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #dd6b20;
+}
+
+.btn-info {
+  background: #4299e1;
+  color: white;
+}
+
+.btn-info:hover {
+  background: #3182ce;
+}
+
+.btn-secondary {
+  background: #718096;
+  color: white;
+  cursor: not-allowed;
+}
+
+.btn-secondary:hover {
+  background: #4a5568;
+}
+
 .form-group {
   margin-bottom: 16px;
 }
@@ -175,6 +203,16 @@ table th {
 .badge-danger {
   background: #fed7d7;
   color: #742a2a;
+}
+
+.badge-info {
+  background: #bee3f8;
+  color: #2a4365;
+}
+
+.badge-secondary {
+  background: #e2e8f0;
+  color: #2d3748;
 }
 
 .error {
